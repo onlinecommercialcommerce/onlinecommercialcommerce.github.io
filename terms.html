@@ -1,15 +1,433 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Terms & Returns</title>
-</head>
-<body>
-  <h2>Terms & Return Policy</h2>
-  <p>All items are thrifted and inspected before sale.</p>
-  <ul>
-    <li>No cash refunds</li>
-    <li>Exchange within 48 hours with receipt</li>
-    <li>No return for clearance items</li>
-  </ul>
-</body>
-</html>
+import React, { useState, useMemo } from 'react';
+import { ShoppingBag, MapPin, Calendar, Camera, MessageCircle, CheckCircle2, Info, Filter, X, ChevronDown } from 'lucide-react';
+
+
+const App = () => {
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
+
+
+  // Advanced Filter States
+  const [filters, setFilters] = useState({
+    status: 'all', // all, online, market
+    category: 'all', // Topwear, Bottoms
+    size: 'all',
+    priceRange: 'all', // 0-400, 400-700, 700+
+    fabric: 'all'
+  });
+
+
+  const year = new Date().getFullYear();
+
+
+  // Your Master Product List
+  const products = [
+    {
+      id: 'SKU-001',
+      name: 'Vintage Denim Shirt',
+      category: 'Topwear',
+      subCategory: 'Shirt',
+      price: 399,
+      size: 'M',
+      color: 'Indigo',
+      fabric: 'Denim',
+      image: 'images/shirt1.jpg',
+      status: 'online',
+      tag: 'Bestseller'
+    },
+    {
+      id: 'SKU-002',
+      name: 'Classic Checked Flannel',
+      category: 'Topwear',
+      subCategory: 'Shirt',
+      price: 349,
+      size: 'L',
+      color: 'Red/Black',
+      fabric: 'Flannel',
+      image: 'images/shirt2.jpg',
+      status: 'market',
+      tag: 'Rare Find'
+    },
+    {
+      id: 'SKU-003',
+      name: 'Cargo Utility Pants',
+      category: 'Bottoms',
+      subCategory: 'Trousers',
+      price: 599,
+      size: '32',
+      color: 'Olive',
+      fabric: 'Cotton Drill',
+      image: 'images/pants1.jpg',
+      status: 'online',
+      tag: 'New Arrival'
+    },
+    {
+      id: 'SKU-004',
+      name: 'Heavyweight Oversized Tee',
+      category: 'Topwear',
+      subCategory: 'T-Shirt',
+      price: 799,
+      size: 'XL',
+      color: 'Black',
+      fabric: 'Heavy Cotton',
+      image: 'images/tee1.jpg',
+      status: 'online',
+      tag: 'Premium'
+    }
+  ];
+
+
+  // Filtering Logic
+  const filteredProducts = useMemo(() => {
+    return products.filter(product => {
+      const matchStatus = filters.status === 'all' || product.status === filters.status;
+      const matchCategory = filters.category === 'all' || product.category === filters.category;
+      const matchSize = filters.size === 'all' || product.size.includes(filters.size);
+      const matchFabric = filters.fabric === 'all' || product.fabric === filters.fabric;
+     
+      let matchPrice = true;
+      if (filters.priceRange === 'under400') matchPrice = product.price <= 400;
+      else if (filters.priceRange === '400-700') matchPrice = product.price > 400 && product.price <= 700;
+      else if (filters.priceRange === 'above700') matchPrice = product.price > 700;
+
+
+      return matchStatus && matchCategory && matchSize && matchFabric && matchPrice;
+    });
+  }, [filters, products]);
+
+
+  const sendWhatsApp = (product) => {
+    const message = `*OFFICIAL ORDER REQUEST*%0A--------------------------%0A📦 *Product:* ${product.name}%0A🆔 *SKU:* ${product.id}%0A📏 *Size:* ${product.size}%0A💰 *Price:* ₹${product.price}%0A--------------------------%0A*Customer Query:* Is this item currently available for dispatch?`;
+    window.open(`https://wa.me/919440741757?text=${message}`, '_blank');
+  };
+
+
+  const resetFilters = () => {
+    setFilters({ status: 'all', category: 'all', size: 'all', priceRange: 'all', fabric: 'all' });
+  };
+
+
+  return (
+    <div className="min-h-screen bg-[#fafafa] text-slate-900 font-sans">
+     
+      {/* ANNOUNCEMENT */}
+      <div className="bg-black text-white py-2 overflow-hidden whitespace-nowrap">
+        <div className="flex animate-pulse justify-center space-x-8 text-[10px] font-bold uppercase tracking-[0.2em]">
+          <span>📍 Erragadda Sunday Market (8AM - 2PM)</span>
+          <span>🚚 Free Shipping Above ₹999</span>
+          <span>✨ Cleaned & Sanitized Items</span>
+        </div>
+      </div>
+
+
+      {/* NAVIGATION */}
+      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200">
+        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex flex-col">
+            <span className="text-xl font-black tracking-tighter leading-none italic">ERRAGADDA</span>
+            <span className="text-[10px] font-bold text-green-600 tracking-[0.2em]">THRIFT CLOUD</span>
+          </div>
+
+
+          <div className="flex items-center space-x-5">
+            <button onClick={() => setIsFilterOpen(true)} className="flex items-center space-x-2 bg-slate-100 px-3 py-1.5 rounded-full hover:bg-slate-200 transition">
+              <Filter className="w-4 h-4" />
+              <span className="text-[10px] font-bold uppercase tracking-wider">Filter</span>
+            </button>
+            <div className="relative cursor-pointer group">
+              <ShoppingBag className="w-5 h-5 group-hover:text-green-600 transition-colors" />
+              <span className="absolute -top-1.5 -right-1.5 bg-black text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{cartCount}</span>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+
+      {/* FILTER OVERLAY */}
+      {isFilterOpen && (
+        <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex justify-end">
+          <div className="w-full max-w-sm bg-white h-full p-8 shadow-2xl flex flex-col">
+            <div className="flex justify-between items-center mb-10">
+              <h2 className="text-xl font-black italic tracking-tighter">FILTER ITEMS</h2>
+              <X className="w-6 h-6 cursor-pointer" onClick={() => setIsFilterOpen(false)} />
+            </div>
+
+
+            <div className="space-y-8 flex-grow overflow-y-auto no-scrollbar pb-10">
+              {/* Filter Group: Availability */}
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">Availability</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {['all', 'online', 'market'].map(s => (
+                    <button key={s} onClick={() => setFilters({...filters, status: s})} className={`py-2 text-[10px] font-bold uppercase rounded-lg border transition ${filters.status === s ? 'bg-black text-white border-black' : 'border-slate-200 hover:border-black'}`}>{s}</button>
+                  ))}
+                </div>
+              </div>
+
+
+              {/* Filter Group: Category */}
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">Category</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {['all', 'Topwear', 'Bottoms'].map(c => (
+                    <button key={c} onClick={() => setFilters({...filters, category: c})} className={`py-2 text-[10px] font-bold uppercase rounded-lg border transition ${filters.category === c ? 'bg-black text-white border-black' : 'border-slate-200 hover:border-black'}`}>{c}</button>
+                  ))}
+                </div>
+              </div>
+
+
+              {/* Filter Group: Price */}
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">Price Range</label>
+                <select
+                  className="w-full p-3 bg-slate-50 rounded-xl border-none text-xs font-bold appearance-none"
+                  value={filters.priceRange}
+                  onChange={(e) => setFilters({...filters, priceRange: e.target.value})}
+                >
+                  <option value="all">ALL PRICES</option>
+                  <option value="under400">UNDER ₹400</option>
+                  <option value="400-700">₹400 - ₹700</option>
+                  <option value="above700">ABOVE ₹700</option>
+                </select>
+              </div>
+
+
+               {/* Filter Group: Size */}
+               <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">Size</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {['all', 'S', 'M', 'L', 'XL', '32', '34'].map(s => (
+                    <button key={s} onClick={() => setFilters({...filters, size: s})} className={`py-2 text-[10px] font-bold uppercase rounded-lg border transition ${filters.size === s ? 'bg-black text-white border-black' : 'border-slate-200 hover:border-black'}`}>{s}</button>
+                  ))}
+                </div>
+              </div>
+
+
+              {/* Filter Group: Fabric */}
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">Fabric Type</label>
+                <select
+                  className="w-full p-3 bg-slate-50 rounded-xl border-none text-xs font-bold"
+                  value={filters.fabric}
+                  onChange={(e) => setFilters({...filters, fabric: e.target.value})}
+                >
+                  <option value="all">ANY FABRIC</option>
+                  <option value="Denim">DENIM</option>
+                  <option value="Flannel">FLANNEL</option>
+                  <option value="Cotton">COTTON</option>
+                  <option value="Heavy Cotton">HEAVY COTTON</option>
+                </select>
+              </div>
+            </div>
+
+
+            <div className="pt-6 border-t border-slate-100 flex gap-4">
+              <button onClick={resetFilters} className="flex-1 py-4 text-xs font-bold uppercase tracking-widest hover:text-red-500 transition">Reset</button>
+              <button onClick={() => setIsFilterOpen(false)} className="flex-[2] bg-black text-white py-4 rounded-2xl text-xs font-bold uppercase tracking-widest">Apply Filter</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      {/* MAIN CONTENT */}
+      <main className="max-w-6xl mx-auto px-4 py-10">
+       
+        {/* Active Filters Display */}
+        <div className="flex flex-wrap items-center gap-2 mb-8">
+           <h2 className="text-2xl font-black italic tracking-tighter mr-4">CURATED DROP</h2>
+           {Object.entries(filters).map(([key, val]) => val !== 'all' && (
+             <span key={key} className="bg-green-100 text-green-700 text-[9px] font-black px-3 py-1 rounded-full flex items-center">
+               {val.toUpperCase()}
+               <X className="w-3 h-3 ml-1 cursor-pointer" onClick={() => setFilters({...filters, [key]: 'all'})} />
+             </span>
+           ))}
+        </div>
+
+
+        {/* PRODUCT GRID */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {filteredProducts.map((product) => (
+            <div key={product.id} className="group flex flex-col bg-white rounded-[2rem] overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500">
+              <div className="relative aspect-[4/5] overflow-hidden">
+                <img src={product.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" onError={e => e.target.src=`https://placehold.co/600x750?text=${product.name}`} />
+                <div className="absolute top-4 left-4 flex flex-col gap-2">
+                  <span className="bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[9px] font-black tracking-widest uppercase shadow-sm w-fit">{product.tag}</span>
+                </div>
+                {product.status === 'market' && (
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center p-4">
+                    <span className="bg-yellow-400 text-black text-[9px] font-black px-4 py-2 rounded-full -rotate-2">STALL EXCLUSIVE</span>
+                  </div>
+                )}
+              </div>
+
+
+              <div className="p-5 flex flex-col flex-grow">
+                <div className="flex justify-between items-start mb-1 opacity-50">
+                  <span className="text-[9px] font-black uppercase tracking-widest">{product.category} • {product.fabric}</span>
+                  <span className="text-[9px] font-mono">{product.id}</span>
+                </div>
+                <h3 className="text-sm font-bold text-slate-800 mb-1 leading-tight">{product.name}</h3>
+                <p className="text-xs text-slate-500 font-medium mb-4 italic">Size {product.size} / {product.color}</p>
+               
+                <div className="mt-auto pt-4 flex items-center justify-between border-t border-slate-50">
+                  <span className="text-lg font-black tracking-tighter">₹{product.price}</span>
+                  {product.status === 'online' ? (
+                    <button onClick={() => sendWhatsApp(product)} className="bg-green-600 text-white p-2.5 rounded-xl hover:bg-black transition-colors">
+                      <MessageCircle className="w-5 h-5" />
+                    </button>
+                  ) : (
+                    <span className="text-[8px] font-black text-slate-300 uppercase">Unavailable</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+          {filteredProducts.length === 0 && (
+            <div className="col-span-full py-20 text-center border-2 border-dashed rounded-3xl">
+              <p className="text-slate-400 font-bold uppercase tracking-widest text-xs italic">No items match your specific filters</p>
+              <button onClick={resetFilters} className="mt-4 text-green-600 font-black text-[10px] uppercase tracking-[0.2em] border-b-2 border-green-600">Clear all filters</button>
+            </div>
+          )}
+        </div>
+      </main>
+
+
+      {/* HOW IT WORKS - RE-ADDED & IMPROVED */}
+      <section className="bg-[#111] text-white py-24 px-4 overflow-hidden relative">
+        <div className="max-w-6xl mx-auto relative z-10">
+          <div className="grid md:grid-cols-2 gap-16 items-center">
+            <div>
+              <h2 className="text-5xl font-black italic tracking-tighter mb-8 leading-[0.9]">
+                HYBRID <br/> <span className="text-green-500 underline decoration-white/20">THRIFTING.</span>
+              </h2>
+              <p className="text-slate-400 text-sm leading-relaxed max-w-sm mb-12">
+                We merge the thrill of the Erragadda market with the convenience of online shopping. Handpicked quality, every single time.
+              </p>
+             
+              <div className="space-y-8">
+                <div className="flex gap-6">
+                  <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-6 h-6 text-green-500" />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-xs uppercase tracking-widest mb-1">Quality Guaranteed</h4>
+                    <p className="text-[11px] text-slate-500 uppercase font-bold tracking-tighter">Steamed, Sanitized, and Inspected</p>
+                  </div>
+                </div>
+                <div className="flex gap-6">
+                  <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                    <MapPin className="w-6 h-6 text-blue-500" />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-xs uppercase tracking-widest mb-1">Visit The Stall</h4>
+                    <p className="text-[11px] text-slate-500 uppercase font-bold tracking-tighter">Every Sunday • Erragadda Market</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white/5 p-8 rounded-[3rem] border border-white/10 text-center">
+                <span className="text-4xl font-black italic text-green-500 block mb-2">01</span>
+                <span className="text-[10px] font-black uppercase tracking-widest">Select Item</span>
+              </div>
+              <div className="bg-white/5 p-8 rounded-[3rem] border border-white/10 text-center mt-8">
+                <span className="text-4xl font-black italic text-blue-500 block mb-2">02</span>
+                <span className="text-[10px] font-black uppercase tracking-widest">Chat & Pay</span>
+              </div>
+              <div className="bg-white/5 p-8 rounded-[3rem] border border-white/10 text-center -mt-8">
+                <span className="text-4xl font-black italic text-white block mb-2">03</span>
+                <span className="text-[10px] font-black uppercase tracking-widest">Doorstep Delivery</span>
+              </div>
+              <div className="bg-white/5 p-8 rounded-[3rem] border border-white/10 text-center">
+                <span className="text-4xl font-black italic text-slate-500 block mb-2">04</span>
+                <span className="text-[10px] font-black uppercase tracking-widest">Wear & Tag Us</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Background Text Decor */}
+        <div className="absolute -bottom-10 -left-10 text-[10vw] font-black text-white/5 select-none tracking-tighter italic">SUSTAINABLE</div>
+      </section>
+
+
+      {/* LOCATION & PAYMENT */}
+      <section className="max-w-6xl mx-auto px-4 py-24">
+        <div className="flex flex-col md:flex-row gap-8">
+          <div className="flex-1 bg-white p-12 rounded-[3rem] border border-slate-200">
+            <h3 className="text-3xl font-black italic tracking-tighter mb-8">STALL LOCATION</h3>
+            <div className="space-y-6">
+               <div className="flex items-start gap-4">
+                 <div className="bg-slate-100 p-3 rounded-2xl"><MapPin className="w-5 h-5 text-black" /></div>
+                 <div>
+                    <p className="text-sm font-black uppercase tracking-tight">Erragadda Sunday Market</p>
+                    <p className="text-xs text-slate-500 italic">Opp. Erragadda Metro, Hyderabad</p>
+                 </div>
+               </div>
+               <div className="flex items-start gap-4">
+                 <div className="bg-slate-100 p-3 rounded-2xl"><Calendar className="w-5 h-5 text-black" /></div>
+                 <div>
+                    <p className="text-sm font-black uppercase tracking-tight">8:00 AM — 2:00 PM</p>
+                    <p className="text-xs text-slate-500 italic">Every Sunday Morning</p>
+                 </div>
+               </div>
+            </div>
+          </div>
+          <div className="flex-1 bg-slate-900 text-white p-12 rounded-[3rem] flex flex-col items-center justify-center text-center">
+             <h3 className="text-xl font-black uppercase tracking-widest mb-6 text-green-500">Fast UPI Checkout</h3>
+             <div className="bg-white p-4 rounded-[2rem] shadow-2xl">
+                <img src="upi-qr.png.jpeg" className="w-40 h-40 object-contain rounded-xl" onError={e => e.target.src=`https://placehold.co/200x200?text=SCAN+UPI`} />
+             </div>
+             <p className="mt-6 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Scan with GPay, PhonePe, or Paytm</p>
+          </div>
+        </div>
+      </section>
+
+
+      {/* FOOTER */}
+      <footer className="bg-white border-t border-slate-200 pt-24 pb-12 px-4">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start gap-16 mb-20">
+          <div className="max-w-xs">
+            <span className="text-2xl font-black italic tracking-tighter">ERRAGADDA THRIFT</span>
+            <p className="mt-6 text-xs text-slate-500 leading-relaxed font-medium">
+              Curated second-hand fashion from the heart of Hyderabad. Sustainable, affordable, and hand-picked with care.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-24">
+            <div>
+              <h5 className="font-black text-[10px] uppercase tracking-[0.2em] mb-8 text-slate-400">Services</h5>
+              <ul className="text-xs space-y-5 font-bold uppercase tracking-tight">
+                <li><a href="terms.html" className="hover:text-green-600 transition">Shipping Policy</a></li>
+                <li><a href="terms.html" className="hover:text-green-600 transition">Return Policy</a></li>
+                <li><a href="https://wa.me/919440741757" className="hover:text-green-600 transition">Wholesale</a></li>
+              </ul>
+            </div>
+            <div>
+              <h5 className="font-black text-[10px] uppercase tracking-[0.2em] mb-8 text-slate-400">Social</h5>
+              <ul className="text-xs space-y-5 font-bold uppercase tracking-tight">
+                <li><a href="https://instagram.com/_xd.saif_" target="_blank" className="hover:text-pink-600 transition">Instagram</a></li>
+                <li><a href="#" className="hover:text-green-600 transition">WhatsApp Channel</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-6xl mx-auto pt-10 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center text-[9px] text-slate-400 font-bold uppercase tracking-[0.2em]">
+          <p>© {year} ERRAGADDA THRIFT CLOUD</p>
+          <p className="mt-4 md:mt-0">Zero Maintenance Platform</p>
+        </div>
+      </footer>
+
+
+      {/* MOBILE FAB */}
+      <a href="https://wa.me/919440741757" className="md:hidden fixed bottom-8 right-8 bg-green-600 text-white p-5 rounded-full shadow-2xl z-50 animate-bounce">
+        <MessageCircle className="w-6 h-6" />
+      </a>
+    </div>
+  );
+};
+
+
+export default App;
+
