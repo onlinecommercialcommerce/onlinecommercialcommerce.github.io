@@ -1,433 +1,535 @@
-import React, { useState, useMemo } from 'react';
-import { ShoppingBag, MapPin, Calendar, Camera, MessageCircle, CheckCircle2, Info, Filter, X, ChevronDown } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erragadda Thrift | Curated Vintage Collective</title>
+    <!-- Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            scroll-behavior: smooth; 
+            background-color: #F9FAFB;
+        }
 
+        /* Scroll-Reactive Brand Animation */
+        #main-nav { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .nav-scrolled { height: 70px !important; }
+        .logo-scrolled { transform: scale(0.8); }
 
-const App = () => {
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
+        /* Smooth Entrance */
+        @keyframes revealUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .reveal { animation: revealUp 0.8s ease forwards; }
 
+        /* Custom UI Elements */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        
+        .product-card-img { transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        .product-card:hover .product-card-img { transform: scale(1.08); }
 
-  // Advanced Filter States
-  const [filters, setFilters] = useState({
-    status: 'all', // all, online, market
-    category: 'all', // Topwear, Bottoms
-    size: 'all',
-    priceRange: 'all', // 0-400, 400-700, 700+
-    fabric: 'all'
-  });
+        /* Skeleton Loading look */
+        .shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        @keyframes loading { to { background-position: -200% 0; } }
+    </style>
+</head>
+<body class="text-slate-900 overflow-x-hidden">
 
-
-  const year = new Date().getFullYear();
-
-
-  // Your Master Product List
-  const products = [
-    {
-      id: 'SKU-001',
-      name: 'Vintage Denim Shirt',
-      category: 'Topwear',
-      subCategory: 'Shirt',
-      price: 399,
-      size: 'M',
-      color: 'Indigo',
-      fabric: 'Denim',
-      image: 'images/shirt1.jpg',
-      status: 'online',
-      tag: 'Bestseller'
-    },
-    {
-      id: 'SKU-002',
-      name: 'Classic Checked Flannel',
-      category: 'Topwear',
-      subCategory: 'Shirt',
-      price: 349,
-      size: 'L',
-      color: 'Red/Black',
-      fabric: 'Flannel',
-      image: 'images/shirt2.jpg',
-      status: 'market',
-      tag: 'Rare Find'
-    },
-    {
-      id: 'SKU-003',
-      name: 'Cargo Utility Pants',
-      category: 'Bottoms',
-      subCategory: 'Trousers',
-      price: 599,
-      size: '32',
-      color: 'Olive',
-      fabric: 'Cotton Drill',
-      image: 'images/pants1.jpg',
-      status: 'online',
-      tag: 'New Arrival'
-    },
-    {
-      id: 'SKU-004',
-      name: 'Heavyweight Oversized Tee',
-      category: 'Topwear',
-      subCategory: 'T-Shirt',
-      price: 799,
-      size: 'XL',
-      color: 'Black',
-      fabric: 'Heavy Cotton',
-      image: 'images/tee1.jpg',
-      status: 'online',
-      tag: 'Premium'
-    }
-  ];
-
-
-  // Filtering Logic
-  const filteredProducts = useMemo(() => {
-    return products.filter(product => {
-      const matchStatus = filters.status === 'all' || product.status === filters.status;
-      const matchCategory = filters.category === 'all' || product.category === filters.category;
-      const matchSize = filters.size === 'all' || product.size.includes(filters.size);
-      const matchFabric = filters.fabric === 'all' || product.fabric === filters.fabric;
-     
-      let matchPrice = true;
-      if (filters.priceRange === 'under400') matchPrice = product.price <= 400;
-      else if (filters.priceRange === '400-700') matchPrice = product.price > 400 && product.price <= 700;
-      else if (filters.priceRange === 'above700') matchPrice = product.price > 700;
-
-
-      return matchStatus && matchCategory && matchSize && matchFabric && matchPrice;
-    });
-  }, [filters, products]);
-
-
-  const sendWhatsApp = (product) => {
-    const message = `*OFFICIAL ORDER REQUEST*%0A--------------------------%0A📦 *Product:* ${product.name}%0A🆔 *SKU:* ${product.id}%0A📏 *Size:* ${product.size}%0A💰 *Price:* ₹${product.price}%0A--------------------------%0A*Customer Query:* Is this item currently available for dispatch?`;
-    window.open(`https://wa.me/919440741757?text=${message}`, '_blank');
-  };
-
-
-  const resetFilters = () => {
-    setFilters({ status: 'all', category: 'all', size: 'all', priceRange: 'all', fabric: 'all' });
-  };
-
-
-  return (
-    <div className="min-h-screen bg-[#fafafa] text-slate-900 font-sans">
-     
-      {/* ANNOUNCEMENT */}
-      <div className="bg-black text-white py-2 overflow-hidden whitespace-nowrap">
-        <div className="flex animate-pulse justify-center space-x-8 text-[10px] font-bold uppercase tracking-[0.2em]">
-          <span>📍 Erragadda Sunday Market (8AM - 2PM)</span>
-          <span>🚚 Free Shipping Above ₹999</span>
-          <span>✨ Cleaned & Sanitized Items</span>
+    <!-- 1. DYNAMIC ANNOUNCEMENT BAR -->
+    <div class="bg-black text-white py-2 overflow-hidden sticky top-0 z-[110]">
+        <div class="flex animate-[scroll_35s_linear_infinite] whitespace-nowrap text-[10px] font-extrabold uppercase tracking-[0.3em]">
+            <span class="mx-12 flex items-center gap-2"><i data-lucide="zap" class="w-3 h-3 text-yellow-400"></i> SUNDAY MARKET DROP IS LIVE</span>
+            <span class="mx-12 flex items-center gap-2"><i data-lucide="shield-check" class="w-3 h-3 text-green-400"></i> AUTHENTIC VINTAGE GUARANTEE</span>
+            <span class="mx-12 flex items-center gap-2"><i data-lucide="truck" class="w-3 h-3"></i> PAN INDIA SHIPPING AVAILABLE</span>
+            <span class="mx-12 flex items-center gap-2"><i data-lucide="zap" class="w-3 h-3 text-yellow-400"></i> SUNDAY MARKET DROP IS LIVE</span>
         </div>
-      </div>
-
-
-      {/* NAVIGATION */}
-      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex flex-col">
-            <span className="text-xl font-black tracking-tighter leading-none italic">ERRAGADDA</span>
-            <span className="text-[10px] font-bold text-green-600 tracking-[0.2em]">THRIFT CLOUD</span>
-          </div>
-
-
-          <div className="flex items-center space-x-5">
-            <button onClick={() => setIsFilterOpen(true)} className="flex items-center space-x-2 bg-slate-100 px-3 py-1.5 rounded-full hover:bg-slate-200 transition">
-              <Filter className="w-4 h-4" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Filter</span>
-            </button>
-            <div className="relative cursor-pointer group">
-              <ShoppingBag className="w-5 h-5 group-hover:text-green-600 transition-colors" />
-              <span className="absolute -top-1.5 -right-1.5 bg-black text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{cartCount}</span>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-
-      {/* FILTER OVERLAY */}
-      {isFilterOpen && (
-        <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex justify-end">
-          <div className="w-full max-w-sm bg-white h-full p-8 shadow-2xl flex flex-col">
-            <div className="flex justify-between items-center mb-10">
-              <h2 className="text-xl font-black italic tracking-tighter">FILTER ITEMS</h2>
-              <X className="w-6 h-6 cursor-pointer" onClick={() => setIsFilterOpen(false)} />
-            </div>
-
-
-            <div className="space-y-8 flex-grow overflow-y-auto no-scrollbar pb-10">
-              {/* Filter Group: Availability */}
-              <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">Availability</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {['all', 'online', 'market'].map(s => (
-                    <button key={s} onClick={() => setFilters({...filters, status: s})} className={`py-2 text-[10px] font-bold uppercase rounded-lg border transition ${filters.status === s ? 'bg-black text-white border-black' : 'border-slate-200 hover:border-black'}`}>{s}</button>
-                  ))}
-                </div>
-              </div>
-
-
-              {/* Filter Group: Category */}
-              <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">Category</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {['all', 'Topwear', 'Bottoms'].map(c => (
-                    <button key={c} onClick={() => setFilters({...filters, category: c})} className={`py-2 text-[10px] font-bold uppercase rounded-lg border transition ${filters.category === c ? 'bg-black text-white border-black' : 'border-slate-200 hover:border-black'}`}>{c}</button>
-                  ))}
-                </div>
-              </div>
-
-
-              {/* Filter Group: Price */}
-              <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">Price Range</label>
-                <select
-                  className="w-full p-3 bg-slate-50 rounded-xl border-none text-xs font-bold appearance-none"
-                  value={filters.priceRange}
-                  onChange={(e) => setFilters({...filters, priceRange: e.target.value})}
-                >
-                  <option value="all">ALL PRICES</option>
-                  <option value="under400">UNDER ₹400</option>
-                  <option value="400-700">₹400 - ₹700</option>
-                  <option value="above700">ABOVE ₹700</option>
-                </select>
-              </div>
-
-
-               {/* Filter Group: Size */}
-               <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">Size</label>
-                <div className="grid grid-cols-4 gap-2">
-                  {['all', 'S', 'M', 'L', 'XL', '32', '34'].map(s => (
-                    <button key={s} onClick={() => setFilters({...filters, size: s})} className={`py-2 text-[10px] font-bold uppercase rounded-lg border transition ${filters.size === s ? 'bg-black text-white border-black' : 'border-slate-200 hover:border-black'}`}>{s}</button>
-                  ))}
-                </div>
-              </div>
-
-
-              {/* Filter Group: Fabric */}
-              <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">Fabric Type</label>
-                <select
-                  className="w-full p-3 bg-slate-50 rounded-xl border-none text-xs font-bold"
-                  value={filters.fabric}
-                  onChange={(e) => setFilters({...filters, fabric: e.target.value})}
-                >
-                  <option value="all">ANY FABRIC</option>
-                  <option value="Denim">DENIM</option>
-                  <option value="Flannel">FLANNEL</option>
-                  <option value="Cotton">COTTON</option>
-                  <option value="Heavy Cotton">HEAVY COTTON</option>
-                </select>
-              </div>
-            </div>
-
-
-            <div className="pt-6 border-t border-slate-100 flex gap-4">
-              <button onClick={resetFilters} className="flex-1 py-4 text-xs font-bold uppercase tracking-widest hover:text-red-500 transition">Reset</button>
-              <button onClick={() => setIsFilterOpen(false)} className="flex-[2] bg-black text-white py-4 rounded-2xl text-xs font-bold uppercase tracking-widest">Apply Filter</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-
-      {/* MAIN CONTENT */}
-      <main className="max-w-6xl mx-auto px-4 py-10">
-       
-        {/* Active Filters Display */}
-        <div className="flex flex-wrap items-center gap-2 mb-8">
-           <h2 className="text-2xl font-black italic tracking-tighter mr-4">CURATED DROP</h2>
-           {Object.entries(filters).map(([key, val]) => val !== 'all' && (
-             <span key={key} className="bg-green-100 text-green-700 text-[9px] font-black px-3 py-1 rounded-full flex items-center">
-               {val.toUpperCase()}
-               <X className="w-3 h-3 ml-1 cursor-pointer" onClick={() => setFilters({...filters, [key]: 'all'})} />
-             </span>
-           ))}
-        </div>
-
-
-        {/* PRODUCT GRID */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredProducts.map((product) => (
-            <div key={product.id} className="group flex flex-col bg-white rounded-[2rem] overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500">
-              <div className="relative aspect-[4/5] overflow-hidden">
-                <img src={product.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" onError={e => e.target.src=`https://placehold.co/600x750?text=${product.name}`} />
-                <div className="absolute top-4 left-4 flex flex-col gap-2">
-                  <span className="bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[9px] font-black tracking-widest uppercase shadow-sm w-fit">{product.tag}</span>
-                </div>
-                {product.status === 'market' && (
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center p-4">
-                    <span className="bg-yellow-400 text-black text-[9px] font-black px-4 py-2 rounded-full -rotate-2">STALL EXCLUSIVE</span>
-                  </div>
-                )}
-              </div>
-
-
-              <div className="p-5 flex flex-col flex-grow">
-                <div className="flex justify-between items-start mb-1 opacity-50">
-                  <span className="text-[9px] font-black uppercase tracking-widest">{product.category} • {product.fabric}</span>
-                  <span className="text-[9px] font-mono">{product.id}</span>
-                </div>
-                <h3 className="text-sm font-bold text-slate-800 mb-1 leading-tight">{product.name}</h3>
-                <p className="text-xs text-slate-500 font-medium mb-4 italic">Size {product.size} / {product.color}</p>
-               
-                <div className="mt-auto pt-4 flex items-center justify-between border-t border-slate-50">
-                  <span className="text-lg font-black tracking-tighter">₹{product.price}</span>
-                  {product.status === 'online' ? (
-                    <button onClick={() => sendWhatsApp(product)} className="bg-green-600 text-white p-2.5 rounded-xl hover:bg-black transition-colors">
-                      <MessageCircle className="w-5 h-5" />
-                    </button>
-                  ) : (
-                    <span className="text-[8px] font-black text-slate-300 uppercase">Unavailable</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-          {filteredProducts.length === 0 && (
-            <div className="col-span-full py-20 text-center border-2 border-dashed rounded-3xl">
-              <p className="text-slate-400 font-bold uppercase tracking-widest text-xs italic">No items match your specific filters</p>
-              <button onClick={resetFilters} className="mt-4 text-green-600 font-black text-[10px] uppercase tracking-[0.2em] border-b-2 border-green-600">Clear all filters</button>
-            </div>
-          )}
-        </div>
-      </main>
-
-
-      {/* HOW IT WORKS - RE-ADDED & IMPROVED */}
-      <section className="bg-[#111] text-white py-24 px-4 overflow-hidden relative">
-        <div className="max-w-6xl mx-auto relative z-10">
-          <div className="grid md:grid-cols-2 gap-16 items-center">
-            <div>
-              <h2 className="text-5xl font-black italic tracking-tighter mb-8 leading-[0.9]">
-                HYBRID <br/> <span className="text-green-500 underline decoration-white/20">THRIFTING.</span>
-              </h2>
-              <p className="text-slate-400 text-sm leading-relaxed max-w-sm mb-12">
-                We merge the thrill of the Erragadda market with the convenience of online shopping. Handpicked quality, every single time.
-              </p>
-             
-              <div className="space-y-8">
-                <div className="flex gap-6">
-                  <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                    <CheckCircle2 className="w-6 h-6 text-green-500" />
-                  </div>
-                  <div>
-                    <h4 className="font-black text-xs uppercase tracking-widest mb-1">Quality Guaranteed</h4>
-                    <p className="text-[11px] text-slate-500 uppercase font-bold tracking-tighter">Steamed, Sanitized, and Inspected</p>
-                  </div>
-                </div>
-                <div className="flex gap-6">
-                  <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                    <MapPin className="w-6 h-6 text-blue-500" />
-                  </div>
-                  <div>
-                    <h4 className="font-black text-xs uppercase tracking-widest mb-1">Visit The Stall</h4>
-                    <p className="text-[11px] text-slate-500 uppercase font-bold tracking-tighter">Every Sunday • Erragadda Market</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white/5 p-8 rounded-[3rem] border border-white/10 text-center">
-                <span className="text-4xl font-black italic text-green-500 block mb-2">01</span>
-                <span className="text-[10px] font-black uppercase tracking-widest">Select Item</span>
-              </div>
-              <div className="bg-white/5 p-8 rounded-[3rem] border border-white/10 text-center mt-8">
-                <span className="text-4xl font-black italic text-blue-500 block mb-2">02</span>
-                <span className="text-[10px] font-black uppercase tracking-widest">Chat & Pay</span>
-              </div>
-              <div className="bg-white/5 p-8 rounded-[3rem] border border-white/10 text-center -mt-8">
-                <span className="text-4xl font-black italic text-white block mb-2">03</span>
-                <span className="text-[10px] font-black uppercase tracking-widest">Doorstep Delivery</span>
-              </div>
-              <div className="bg-white/5 p-8 rounded-[3rem] border border-white/10 text-center">
-                <span className="text-4xl font-black italic text-slate-500 block mb-2">04</span>
-                <span className="text-[10px] font-black uppercase tracking-widest">Wear & Tag Us</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* Background Text Decor */}
-        <div className="absolute -bottom-10 -left-10 text-[10vw] font-black text-white/5 select-none tracking-tighter italic">SUSTAINABLE</div>
-      </section>
-
-
-      {/* LOCATION & PAYMENT */}
-      <section className="max-w-6xl mx-auto px-4 py-24">
-        <div className="flex flex-col md:flex-row gap-8">
-          <div className="flex-1 bg-white p-12 rounded-[3rem] border border-slate-200">
-            <h3 className="text-3xl font-black italic tracking-tighter mb-8">STALL LOCATION</h3>
-            <div className="space-y-6">
-               <div className="flex items-start gap-4">
-                 <div className="bg-slate-100 p-3 rounded-2xl"><MapPin className="w-5 h-5 text-black" /></div>
-                 <div>
-                    <p className="text-sm font-black uppercase tracking-tight">Erragadda Sunday Market</p>
-                    <p className="text-xs text-slate-500 italic">Opp. Erragadda Metro, Hyderabad</p>
-                 </div>
-               </div>
-               <div className="flex items-start gap-4">
-                 <div className="bg-slate-100 p-3 rounded-2xl"><Calendar className="w-5 h-5 text-black" /></div>
-                 <div>
-                    <p className="text-sm font-black uppercase tracking-tight">8:00 AM — 2:00 PM</p>
-                    <p className="text-xs text-slate-500 italic">Every Sunday Morning</p>
-                 </div>
-               </div>
-            </div>
-          </div>
-          <div className="flex-1 bg-slate-900 text-white p-12 rounded-[3rem] flex flex-col items-center justify-center text-center">
-             <h3 className="text-xl font-black uppercase tracking-widest mb-6 text-green-500">Fast UPI Checkout</h3>
-             <div className="bg-white p-4 rounded-[2rem] shadow-2xl">
-                <img src="upi-qr.png.jpeg" className="w-40 h-40 object-contain rounded-xl" onError={e => e.target.src=`https://placehold.co/200x200?text=SCAN+UPI`} />
-             </div>
-             <p className="mt-6 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Scan with GPay, PhonePe, or Paytm</p>
-          </div>
-        </div>
-      </section>
-
-
-      {/* FOOTER */}
-      <footer className="bg-white border-t border-slate-200 pt-24 pb-12 px-4">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start gap-16 mb-20">
-          <div className="max-w-xs">
-            <span className="text-2xl font-black italic tracking-tighter">ERRAGADDA THRIFT</span>
-            <p className="mt-6 text-xs text-slate-500 leading-relaxed font-medium">
-              Curated second-hand fashion from the heart of Hyderabad. Sustainable, affordable, and hand-picked with care.
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-24">
-            <div>
-              <h5 className="font-black text-[10px] uppercase tracking-[0.2em] mb-8 text-slate-400">Services</h5>
-              <ul className="text-xs space-y-5 font-bold uppercase tracking-tight">
-                <li><a href="terms.html" className="hover:text-green-600 transition">Shipping Policy</a></li>
-                <li><a href="terms.html" className="hover:text-green-600 transition">Return Policy</a></li>
-                <li><a href="https://wa.me/919440741757" className="hover:text-green-600 transition">Wholesale</a></li>
-              </ul>
-            </div>
-            <div>
-              <h5 className="font-black text-[10px] uppercase tracking-[0.2em] mb-8 text-slate-400">Social</h5>
-              <ul className="text-xs space-y-5 font-bold uppercase tracking-tight">
-                <li><a href="https://instagram.com/_xd.saif_" target="_blank" className="hover:text-pink-600 transition">Instagram</a></li>
-                <li><a href="#" className="hover:text-green-600 transition">WhatsApp Channel</a></li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        <div className="max-w-6xl mx-auto pt-10 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center text-[9px] text-slate-400 font-bold uppercase tracking-[0.2em]">
-          <p>© {year} ERRAGADDA THRIFT CLOUD</p>
-          <p className="mt-4 md:mt-0">Zero Maintenance Platform</p>
-        </div>
-      </footer>
-
-
-      {/* MOBILE FAB */}
-      <a href="https://wa.me/919440741757" className="md:hidden fixed bottom-8 right-8 bg-green-600 text-white p-5 rounded-full shadow-2xl z-50 animate-bounce">
-        <MessageCircle className="w-6 h-6" />
-      </a>
     </div>
-  );
-};
 
+    <!-- 2. SCROLL-SENSITIVE NAVIGATION -->
+    <nav id="main-nav" class="sticky top-10 z-[100] glass border-b border-slate-200 h-24 flex items-center">
+        <div class="max-w-7xl mx-auto px-6 w-full flex items-center justify-between">
+            <div id="logo-container" class="flex flex-col cursor-pointer transition-all duration-500 origin-left" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+                <h1 class="text-2xl font-black italic leading-none tracking-tighter">ERRAGADDA</h1>
+                <span class="text-[9px] font-black text-green-600 tracking-[0.5em] mt-1">THRIFT STORE</span>
+            </div>
 
-export default App;
+            <div class="flex items-center space-x-3 md:space-x-6">
+                <button onclick="toggleFilterDrawer()" class="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 px-4 py-2.5 rounded-2xl transition">
+                    <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                    <span class="text-[11px] font-bold uppercase tracking-wider hidden md:block">Filters</span>
+                </button>
+                <button onclick="shareStore()" class="p-3 bg-slate-100 rounded-2xl hover:bg-slate-200 transition">
+                    <i data-lucide="share-2" class="w-5 h-5"></i>
+                </button>
+                <button onclick="toggleCart()" class="relative bg-black text-white px-5 py-2.5 rounded-2xl flex items-center gap-2 hover:bg-green-600 transition shadow-lg shadow-black/10">
+                    <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                    <span id="cart-count" class="text-xs font-bold">0</span>
+                </button>
+            </div>
+        </div>
+    </nav>
 
+    <!-- 3. HERO & TOP CATEGORIES -->
+    <header class="max-w-7xl mx-auto px-6 py-12">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div>
+                <h2 class="text-5xl md:text-7xl font-black italic tracking-tighter leading-[0.8] mb-4">THE SUNDAY<br><span class="text-green-600">COLLECTIVE.</span></h2>
+                <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Hand-picked drops from the heart of Hyderabad.</p>
+            </div>
+            <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                <button onclick="filterItems('all')" class="cat-btn active bg-black text-white px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">All</button>
+                <button onclick="filterItems('Topwear')" class="cat-btn bg-white border border-slate-200 px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">Tops</button>
+                <button onclick="filterItems('Bottoms')" class="cat-btn bg-white border border-slate-200 px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">Bottoms</button>
+                <button onclick="filterItems('Outerwear')" class="cat-btn bg-white border border-slate-200 px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">Outerwear</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 4. MAIN PRODUCT GRID -->
+    <main class="max-w-7xl mx-auto px-6 pb-24">
+        <div id="product-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-10">
+            <!-- Products injected by JS -->
+        </div>
+    </main>
+
+    <!-- 5. FILTER DRAWER (OVERLAY) -->
+    <div id="filter-drawer" class="fixed inset-0 z-[200] hidden">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="toggleFilterDrawer()"></div>
+        <div class="absolute right-0 top-0 h-full w-full max-w-sm bg-white shadow-2xl p-10 transform translate-x-full transition-transform duration-500 flex flex-col">
+            <div class="flex justify-between items-center mb-10">
+                <h3 class="text-xl font-black italic">REFINE SEARCH</h3>
+                <button onclick="toggleFilterDrawer()"><i data-lucide="x"></i></button>
+            </div>
+            
+            <div class="space-y-8 flex-1">
+                <div>
+                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest block mb-4">Fabric Material</label>
+                    <div class="flex flex-wrap gap-2" id="fabric-filters">
+                        <!-- JS injected -->
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest block mb-4">Color Palette</label>
+                    <div class="grid grid-cols-4 gap-3" id="color-filters">
+                        <!-- JS injected -->
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest block mb-4">Size Range</label>
+                    <div class="flex gap-2" id="size-filters">
+                        <!-- JS injected -->
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="applyAdvancedFilters()" class="w-full bg-black text-white py-5 rounded-3xl font-black uppercase tracking-widest hover:bg-green-600 transition-all">Apply Filters</button>
+        </div>
+    </div>
+
+    <!-- 6. PRODUCT MODAL (DETAILED) -->
+    <div id="product-modal" class="fixed inset-0 z-[300] hidden flex items-end md:items-center justify-center p-0 md:p-6">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="closeProductModal()"></div>
+        <div class="relative bg-white w-full md:max-w-6xl h-[94vh] md:h-[85vh] rounded-t-[3rem] md:rounded-[3rem] overflow-hidden flex flex-col md:flex-row animate__animated animate__slideInUp">
+            <button onclick="closeProductModal()" class="absolute top-8 right-8 z-10 p-3 bg-white/90 rounded-full"><i data-lucide="x"></i></button>
+            
+            <!-- Image Gallery -->
+            <div class="w-full md:w-1/2 h-2/5 md:h-full bg-slate-100 relative group">
+                <div id="modal-gallery" class="h-full w-full flex overflow-x-auto snap-x snap-mandatory no-scrollbar">
+                    <!-- Images injected -->
+                </div>
+                <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2" id="gallery-dots"></div>
+            </div>
+
+            <!-- Content -->
+            <div class="w-full md:w-1/2 h-3/5 md:h-full overflow-y-auto p-8 md:p-16">
+                <div id="modal-details">
+                    <!-- Content injected -->
+                </div>
+                
+                <div class="mt-12 pt-8 border-t border-slate-100">
+                    <h4 class="text-[10px] font-black uppercase text-slate-400 mb-6 tracking-widest">You may also like</h4>
+                    <div id="similar-products" class="grid grid-cols-3 gap-4"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. CART OVERLAY -->
+    <div id="cart-overlay" class="fixed inset-0 z-[400] hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="toggleCart()"></div>
+        <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white p-8 flex flex-col translate-x-full transition-transform duration-500">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-2xl font-black italic">YOUR BAG</h3>
+                <button onclick="toggleCart()"><i data-lucide="x"></i></button>
+            </div>
+            <div id="cart-items" class="flex-1 overflow-y-auto space-y-6"></div>
+            <div class="pt-8 border-t space-y-4">
+                <div class="flex justify-between">
+                    <span class="text-sm font-bold text-slate-400 uppercase">Subtotal</span>
+                    <span id="cart-total" class="text-xl font-black italic tracking-tighter">₹0</span>
+                </div>
+                <button onclick="checkout()" class="w-full bg-green-600 text-white py-5 rounded-[2rem] font-black uppercase tracking-widest shadow-xl shadow-green-200 hover:bg-black transition-all">Order via WhatsApp</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 8. FOOTER -->
+    <footer class="bg-white border-t border-slate-100 py-24 px-6">
+        <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-16">
+            <div>
+                <h1 class="text-2xl font-black italic mb-4">ERRAGADDA THRIFT</h1>
+                <p class="text-xs font-bold text-slate-400 uppercase leading-loose tracking-widest">Sustainable Fashion. Curated Drops.<br>Zero Waste. Maximum Style.</p>
+                <div class="mt-10">
+                    <button onclick="window.location.href='tel:919440741757'" class="bg-slate-100 px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-slate-200 transition">
+                        <i data-lucide="phone" class="w-4 h-4"></i> Get Support
+                    </button>
+                </div>
+            </div>
+            <div class="flex gap-20">
+                <div class="space-y-4">
+                    <h5 class="text-[10px] font-black uppercase text-slate-300 tracking-[0.2em]">Contact</h5>
+                    <ul class="text-[11px] font-bold uppercase space-y-2">
+                        <li><a href="https://instagram.com/_xd.saif_" class="hover:text-green-600">Instagram</a></li>
+                        <li><a href="#" class="hover:text-green-600">WhatsApp Group</a></li>
+                    </ul>
+                </div>
+                <div class="space-y-4">
+                    <h5 class="text-[10px] font-black uppercase text-slate-300 tracking-[0.2em]">Sizing</h5>
+                    <ul class="text-[11px] font-bold uppercase space-y-2">
+                        <li><a href="#" class="hover:text-green-600">Measurement Guide</a></li>
+                        <li><a href="#" class="hover:text-green-600">Fit Philosophy</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 1. DATA (ENHANCED)
+        const PRODUCTS = [
+            {
+                id: 'VNTG-001',
+                name: '90s Acid Wash Denim Trucker',
+                category: 'Outerwear',
+                fabric: 'Cotton Denim',
+                price: 1499,
+                mrp: 3500,
+                size: 'XL',
+                color: 'Acid Blue',
+                colorHex: '#94a3b8',
+                condition: '9/10 (No Stains)',
+                stock: 1,
+                images: [
+                    'https://images.unsplash.com/photo-1576905341935-4ef509747535?auto=format&fit=crop&w=800&q=80',
+                    'https://images.unsplash.com/photo-1551537482-f2075a1d41f2?auto=format&fit=crop&w=800&q=80'
+                ],
+                desc: 'A quintessential 90s staple. This heavy-duty denim jacket has been curated for its natural distressing and oversized silhouette.',
+                specs: 'Chest: 25", Length: 29", Sleeve: 24". Features original brass hardware and deep internal pockets.'
+            },
+            {
+                id: 'VNTG-002',
+                name: 'Carhartt Style Work Pants',
+                category: 'Bottoms',
+                fabric: 'Duck Canvas',
+                price: 999,
+                mrp: 2800,
+                size: '34',
+                color: 'Camel Brown',
+                colorHex: '#c2410c',
+                condition: '10/10 (Deadstock)',
+                stock: 1,
+                images: [
+                    'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=800&q=80',
+                    'https://images.unsplash.com/photo-1624372533310-9177a493a79d?auto=format&fit=crop&w=800&q=80'
+                ],
+                desc: 'Rugged duck canvas utility pants with double knee construction. Built for durability and a vintage streetwear aesthetic.',
+                specs: 'Waist: 34", Inseam: 31", Leg Opening: 10". Relaxed fit with hammer loop detailing.'
+            },
+            {
+                id: 'VNTG-003',
+                name: 'Heavyweight Flannel Overshirt',
+                category: 'Topwear',
+                fabric: 'Brushed Cotton',
+                price: 549,
+                mrp: 1400,
+                size: 'L',
+                color: 'Shadow Plaid',
+                colorHex: '#475569',
+                condition: '9.5/10',
+                stock: 1,
+                images: [
+                    'https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=800&q=80'
+                ],
+                desc: 'Thick brushed cotton flannel in a classic shadow plaid pattern. Soft to the touch and perfect for layering.',
+                specs: 'Chest: 23", Length: 28". Double chest pockets with button closure.'
+            }
+        ];
+
+        let cart = [];
+        let activeFilters = { category: 'all', fabric: [], color: [], size: [] };
+
+        // 2. RENDER ENGINE
+        function renderItems(data = PRODUCTS) {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = '';
+            
+            data.forEach(p => {
+                const disc = Math.round(((p.mrp - p.price) / p.mrp) * 100);
+                grid.innerHTML += `
+                    <div class="product-card reveal group cursor-pointer" onclick="openProductModal('${p.id}')">
+                        <div class="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-slate-100 mb-6">
+                            <img src="${p.images[0]}" class="product-card-img w-full h-full object-cover">
+                            <div class="absolute top-5 left-5 bg-black text-white px-3 py-1 rounded-full text-[9px] font-black tracking-widest">-${disc}%</div>
+                            <div class="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform">
+                                <button class="w-full bg-white/90 backdrop-blur py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest">Quick View</button>
+                            </div>
+                        </div>
+                        <div class="px-2">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="text-sm font-bold uppercase tracking-tight truncate flex-1 pr-4">${p.name}</h3>
+                                <span class="text-xs font-black italic">₹${p.price}</span>
+                            </div>
+                            <div class="flex justify-between items-center text-[10px] font-black text-slate-300 uppercase tracking-widest">
+                                <span>${p.category}</span>
+                                <span class="text-slate-400">SIZE ${p.size}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        // 3. SCROLL ANIMATION LOGIC
+        window.onscroll = () => {
+            const nav = document.getElementById('main-nav');
+            const logo = document.getElementById('logo-container');
+            if (window.scrollY > 100) {
+                nav.classList.add('nav-scrolled');
+                logo.classList.add('logo-scrolled');
+            } else {
+                nav.classList.remove('nav-scrolled');
+                logo.classList.remove('logo-scrolled');
+            }
+        };
+
+        // 4. PRODUCT MODAL LOGIC
+        function openProductModal(id) {
+            const p = PRODUCTS.find(x => x.id === id);
+            if(!p) return;
+
+            const modal = document.getElementById('product-modal');
+            const gallery = document.getElementById('modal-gallery');
+            const details = document.getElementById('modal-details');
+            const similar = document.getElementById('similar-products');
+
+            // Set Gallery
+            gallery.innerHTML = p.images.map(img => `
+                <div class="min-w-full h-full snap-center">
+                    <img src="${img}" class="w-full h-full object-cover">
+                </div>
+            `).join('');
+
+            // Set Details
+            details.innerHTML = `
+                <div class="mb-10">
+                    <span class="text-[10px] font-black text-green-600 tracking-[0.4em] uppercase mb-3 block">${p.category} • ${p.fabric}</span>
+                    <h2 class="text-4xl md:text-6xl font-black italic tracking-tighter uppercase leading-[0.9] mb-6">${p.name}</h2>
+                    <div class="flex items-end gap-6">
+                        <span class="text-5xl font-black italic tracking-tighter">₹${p.price}</span>
+                        <span class="text-xl text-slate-200 line-through pb-1 italic">₹${p.mrp}</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-10">
+                    <div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
+                        <h5 class="text-[10px] font-black uppercase text-slate-400 mb-2">Detailed Condition</h5>
+                        <p class="text-xs font-bold uppercase">${p.condition}</p>
+                    </div>
+                    <div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
+                        <h5 class="text-[10px] font-black uppercase text-slate-400 mb-2">Size & Fit</h5>
+                        <p class="text-xs font-bold uppercase">${p.size} (Relaxed)</p>
+                    </div>
+                </div>
+
+                <div class="space-y-8 mb-12">
+                    <div>
+                        <h5 class="text-[10px] font-black uppercase text-slate-400 mb-3 tracking-widest">Seller's Note</h5>
+                        <p class="text-sm text-slate-500 leading-relaxed font-semibold">${p.desc}</p>
+                    </div>
+                    <div class="bg-slate-900 text-white p-8 rounded-[2.5rem] relative overflow-hidden">
+                        <i data-lucide="info" class="absolute -right-4 -bottom-4 w-24 h-24 text-white/5 rotate-12"></i>
+                        <h5 class="text-[10px] font-black uppercase tracking-widest mb-3 opacity-60">Hand-Measured Specs</h5>
+                        <p class="text-[11px] font-bold leading-relaxed tracking-wider">${p.specs}</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-4">
+                    <div class="flex items-center bg-slate-100 rounded-[2rem] px-6 gap-6">
+                        <button class="p-2" onclick="adjustQty(-1)"><i data-lucide="minus" class="w-4 h-4"></i></button>
+                        <span id="qty-val" class="text-sm font-black">1</span>
+                        <button class="p-2" onclick="adjustQty(1)"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                    </div>
+                    <button onclick="addToCart('${p.id}')" class="flex-1 bg-black text-white py-5 rounded-[2rem] font-black uppercase tracking-widest hover:bg-green-600 transition-all shadow-2xl">Add To Bag</button>
+                </div>
+            `;
+
+            // Set Similar
+            const related = PRODUCTS.filter(x => x.category === p.category && x.id !== p.id);
+            similar.innerHTML = related.length ? related.map(s => `
+                <div class="cursor-pointer group" onclick="openProductModal('${s.id}')">
+                    <img src="${s.images[0]}" class="aspect-square object-cover rounded-2xl mb-2 group-hover:opacity-80 transition">
+                    <p class="text-[9px] font-black uppercase truncate">${s.name}</p>
+                </div>
+            `).join('') : '<p class="text-[9px] font-bold text-slate-300">More coming soon...</p>';
+
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            lucide.createIcons();
+        }
+
+        function closeProductModal() {
+            document.getElementById('product-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // 5. FILTER SYSTEM
+        function toggleFilterDrawer() {
+            const drawer = document.getElementById('filter-drawer');
+            const child = drawer.querySelector('.max-w-sm');
+            if(drawer.classList.contains('hidden')) {
+                drawer.classList.remove('hidden');
+                setTimeout(() => child.classList.remove('translate-x-full'), 10);
+            } else {
+                child.classList.add('translate-x-full');
+                setTimeout(() => drawer.classList.add('hidden'), 500);
+            }
+        }
+
+        function buildFilters() {
+            const fabrics = [...new Set(PRODUCTS.map(p => p.fabric))];
+            const sizes = [...new Set(PRODUCTS.map(p => p.size))];
+            const colors = PRODUCTS.map(p => ({name: p.color, hex: p.colorHex}));
+
+            document.getElementById('fabric-filters').innerHTML = fabrics.map(f => `
+                <button onclick="this.classList.toggle('bg-black'); this.classList.toggle('text-white')" class="px-5 py-2 rounded-full border border-slate-200 text-[10px] font-black uppercase tracking-widest transition-all">${f}</button>
+            `).join('');
+
+            document.getElementById('color-filters').innerHTML = colors.map(c => `
+                <div class="flex flex-col items-center gap-2 cursor-pointer group">
+                    <div class="w-8 h-8 rounded-full border-2 border-white ring-2 ring-slate-100 group-hover:ring-green-500" style="background: ${c.hex}"></div>
+                    <span class="text-[8px] font-black uppercase">${c.name}</span>
+                </div>
+            `).join('');
+        }
+
+        // 6. CART SYSTEM
+        function addToCart(id) {
+            const p = PRODUCTS.find(x => x.id === id);
+            const qty = parseInt(document.getElementById('qty-val').innerText);
+            
+            // In Thrift, stock is usually 1, but we simulate qty logic
+            for(let i=0; i<qty; i++) {
+                cart.push({...p});
+            }
+            
+            updateCartUI();
+            closeProductModal();
+            showToast(`Added ${qty} item(s) to bag`);
+        }
+
+        function updateCartUI() {
+            const list = document.getElementById('cart-items');
+            const totalEl = document.getElementById('cart-total');
+            document.getElementById('cart-count').innerText = cart.length;
+            
+            list.innerHTML = '';
+            let total = 0;
+            
+            cart.forEach((item, idx) => {
+                total += item.price;
+                list.innerHTML += `
+                    <div class="flex items-center gap-4">
+                        <img src="${item.images[0]}" class="w-16 h-16 rounded-2xl object-cover">
+                        <div class="flex-1">
+                            <h5 class="text-[10px] font-black uppercase truncate">${item.name}</h5>
+                            <p class="text-xs font-black italic">₹${item.price}</p>
+                        </div>
+                        <button onclick="removeItem(${idx})" class="text-slate-300 hover:text-red-500 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>
+                `;
+            });
+            totalEl.innerText = `₹${total}`;
+            lucide.createIcons();
+        }
+
+        function removeItem(idx) {
+            cart.splice(idx, 1);
+            updateCartUI();
+        }
+
+        function toggleCart() {
+            const overlay = document.getElementById('cart-overlay');
+            const child = overlay.querySelector('.max-w-md');
+            if(overlay.classList.contains('hidden')) {
+                overlay.classList.remove('hidden');
+                setTimeout(() => child.classList.remove('translate-x-full'), 10);
+            } else {
+                child.classList.add('translate-x-full');
+                setTimeout(() => overlay.classList.add('hidden'), 500);
+            }
+        }
+
+        // 7. UTILS
+        function adjustQty(n) {
+            const el = document.getElementById('qty-val');
+            let val = parseInt(el.innerText);
+            val = Math.max(1, val + n);
+            el.innerText = val;
+        }
+
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.className = "fixed bottom-10 left-1/2 -translate-x-1/2 bg-black text-white px-8 py-4 rounded-3xl text-[10px] font-black uppercase tracking-widest z-[500] animate__animated animate__fadeInUp";
+            t.innerText = msg;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 2000);
+        }
+
+        function checkout() {
+            if(!cart.length) return showToast("Bag is empty");
+            const items = cart.map(i => `• ${i.name} (₹${i.price})`).join('%0A');
+            const total = cart.reduce((a,b) => a + b.price, 0);
+            const msg = `*NEW THRIFT ORDER*%0A------------------%0A${items}%0A------------------%0A*TOTAL:* ₹${total}%0A_Pls confirm availability!_`;
+            window.open(`https://wa.me/919440741757?text=${msg}`, '_blank');
+        }
+
+        function shareStore() {
+            if (navigator.share) {
+                navigator.share({ title: 'Erragadda Thrift', url: window.location.href });
+            } else {
+                navigator.clipboard.writeText(window.location.href);
+                showToast("Link copied!");
+            }
+        }
+
+        window.onload = () => {
+            renderItems();
+            buildFilters();
+            lucide.createIcons();
+        };
+    </script>
+</body>
+</html>
